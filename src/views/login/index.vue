@@ -50,7 +50,9 @@ const handleLogin = async () => {
   try {
     const res = await login(formData.username, formData.password)
     userStore.setUser(res)
-    router.push(`/${res.role}/home`)
+    // 根据角色跳转到对应的首页
+    const homePath = `/${res.role}/dashboard`
+    router.push(homePath)
   } catch (error) {
     alert('登录失败：' + (error as Error).message)
   } finally {

@@ -6,6 +6,7 @@ export interface UserInfo {
   username: string
   role: 'admin' | 'staff' | 'student'
   token: string
+  avatar?: string
 }
 
 export const useUserStore = defineStore('user', () => {
