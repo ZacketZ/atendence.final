@@ -144,7 +144,7 @@ const router = createRouter({
 });
 
 // 全局路由守卫
-const whiteList = ["/login"]; // 白名单路由
+const whiteList = ["/login", "/test"]; // 白名单路由
 
 router.beforeEach((to, _from, next) => {
   // 开始加载进度条（如果有）
@@ -152,23 +152,26 @@ router.beforeEach((to, _from, next) => {
 
   const userStore = useUserStore();
 
+  // 调试信息
+  console.log("路由守卫:", {
+    to: to.path,
+    requiresAuth: to.meta.requiresAuth,
+    roleRequired: to.meta.role,
+    userInfo: userStore.userInfo,
+    userRole: userStore.userInfo?.role,
+  });
+
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - 考勤系统` : "考勤系统";
 
-  if (to.meta.requiresAuth === false) {
-    // 白名单路由直接通过
-    if (to.path === "/login") {
-      if (userStore.userInfo) {
-        // 已登录访问登录页，重定向到对应角色首页
-        next(`/${userStore.userInfo.role}/dashboard`);
-        return;
-      }
-      // 检查是否有 redirect 参数，如果有则跳转到原始页面（用户已登录的情况）
-      const redirect = to.query.redirect as string;
-      if (redirect) {
-        next(redirect);
-        return;
-      }
+  // 白名单路由直接通过
+  if (whiteList.includes(to.path)) {
+    if (to.path === "/login" && userStore.userInfo) {
+      // 已登录访问登录页，重定向到对应角色首页
+      const homePath = `/${userStore.userInfo.role}/dashboard`;
+      console.log("已登录访问登录页，重定向到:", homePath);
+      next(homePath);
+      return;
     }
     next();
     return;
@@ -176,12 +179,9 @@ router.beforeEach((to, _from, next) => {
 
   // 需要认证的页面
   if (!userStore.userInfo) {
-    if (whiteList.includes(to.path)) {
-      next();
-    } else {
-      ElMessage.warning("请先登录");
-      next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
-    }
+    console.log("未登录，跳转到登录页");
+    ElMessage.warning("请先登录");
+    next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
     return;
   }
 
@@ -189,6 +189,7 @@ router.beforeEach((to, _from, next) => {
   if (to.meta.role) {
     const userRole = userStore.userInfo.role;
     if (userRole !== to.meta.role) {
+      console.log(`角色不匹配: 用户角色=${userRole}, 需要角色=${to.meta.role}`);
       ElMessage.error("您没有权限访问此页面");
       next(`/${userRole}/dashboard`);
       return;
