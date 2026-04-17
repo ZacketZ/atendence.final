@@ -47,13 +47,25 @@
               <el-icon><User /></el-icon>
               <span>用户管理</span>
             </template>
-            <el-menu-item index="/admin/users/staff">
+            <el-menu-item index="/admin/faculty">
               <el-icon><Avatar /></el-icon>
               <span>教职工管理</span>
             </el-menu-item>
-            <el-menu-item index="/admin/users/student">
+            <el-menu-item index="/admin/student">
               <el-icon><UserFilled /></el-icon>
               <span>学生管理</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/roles">
+              <el-icon><Setting /></el-icon>
+              <span>角色权限管理</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/logs">
+              <el-icon><Document /></el-icon>
+              <span>操作日志</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/status">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>状态管理</span>
             </el-menu-item>
           </el-sub-menu>
         </template>
@@ -139,9 +151,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useUserStore } from '@/store/user'
+import { computed, ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useUserStore } from "@/store/user";
 import {
   DataLine,
   Setting,
@@ -155,37 +167,37 @@ import {
   Monitor,
   PieChart,
   DataAnalysis,
-  Connection
-} from '@element-plus/icons-vue'
+  Connection,
+} from "@element-plus/icons-vue";
 
-const route = useRoute()
-const userStore = useUserStore()
+const route = useRoute();
+const userStore = useUserStore();
 
 // 是否折叠侧边栏
-const isCollapse = ref(false)
+const isCollapse = ref(false);
 
 // 用户角色
-const userRole = computed(() => userStore.userInfo?.role || '')
+const userRole = computed(() => userStore.userInfo?.role || "");
 
 // 当前激活的菜单项
 const activeMenu = computed(() => {
-  return route.path
-})
+  return route.path;
+});
 
 // 监听路由变化，自动展开菜单
 onMounted(() => {
   // 如果是移动端，默认折叠
   if (window.innerWidth <= 768) {
-    isCollapse.value = true
+    isCollapse.value = true;
   }
-})
+});
 
 // 响应窗口大小变化
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   if (window.innerWidth <= 768) {
-    isCollapse.value = true
+    isCollapse.value = true;
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>

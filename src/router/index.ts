@@ -42,6 +42,36 @@ const routes = [
         component: () => import("@/views/admin/statistics/index.vue"),
         meta: { title: "统计报表" },
       },
+      {
+        path: "faculty",
+        name: "AdminFaculty",
+        component: () => import("@/views/admin/faculty/index.vue"),
+        meta: { title: "教职工管理" },
+      },
+      {
+        path: "student",
+        name: "AdminStudent",
+        component: () => import("@/views/admin/student/index.vue"),
+        meta: { title: "学生管理" },
+      },
+      {
+        path: "roles",
+        name: "AdminRoles",
+        component: () => import("@/views/admin/roles/index.vue"),
+        meta: { title: "角色权限管理" },
+      },
+      {
+        path: "logs",
+        name: "AdminLogs",
+        component: () => import("@/views/admin/logs/index.vue"),
+        meta: { title: "操作日志" },
+      },
+      {
+        path: "status",
+        name: "AdminStatus",
+        component: () => import("@/views/admin/status/index.vue"),
+        meta: { title: "状态管理" },
+      },
     ],
   },
   {
