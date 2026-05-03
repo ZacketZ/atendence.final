@@ -14,6 +14,7 @@ const recordRoutes = require("./routes/records");
 const appealRoutes = require("./routes/appeals");
 const statisticsRoutes = require("./routes/statistics");
 const dashboardRoutes = require("./routes/dashboard");
+const reportRoutes = require("./routes/reports");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use("/api/records", recordRoutes);
 app.use("/api/appeals", appealRoutes);
 app.use("/api/statistics", statisticsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Attendance System API is running" });

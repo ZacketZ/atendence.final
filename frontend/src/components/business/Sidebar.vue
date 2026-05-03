@@ -28,10 +28,6 @@
               <el-icon><Setting /></el-icon>
               <span>管理</span>
             </template>
-            <el-menu-item index="/admin/schedule">
-              <el-icon><Calendar /></el-icon>
-              <span>课表管理</span>
-            </el-menu-item>
             <el-menu-item index="/admin/attendance">
               <el-icon><List /></el-icon>
               <span>考勤管理</span>
@@ -63,26 +59,6 @@
           <el-menu-item index="/staff/task">
             <el-icon><Document /></el-icon>
             <span>任务管理</span>
-          </el-menu-item>
-
-          <el-sub-menu index="checkin">
-            <template #title>
-              <el-icon><List /></el-icon>
-              <span>签到管理</span>
-            </template>
-            <el-menu-item index="/staff/checkin/teacher">
-              <el-icon><UserFilled /></el-icon>
-              <span>教师签到</span>
-            </el-menu-item>
-            <el-menu-item index="/staff/checkin/student">
-              <el-icon><User /></el-icon>
-              <span>学生签到</span>
-            </el-menu-item>
-          </el-sub-menu>
-
-          <el-menu-item index="/staff/monitor">
-            <el-icon><Monitor /></el-icon>
-            <span>课堂监控</span>
           </el-menu-item>
 
           <el-sub-menu index="reports">
@@ -139,53 +115,51 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useUserStore } from '@/store/user'
+import { computed, ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useUserStore } from "@/store/user";
 import {
   DataLine,
   Setting,
-  Calendar,
   List,
   TrendCharts,
   User,
   Avatar,
   UserFilled,
   Document,
-  Monitor,
   PieChart,
   DataAnalysis,
-  Connection
-} from '@element-plus/icons-vue'
+  Connection,
+} from "@element-plus/icons-vue";
 
-const route = useRoute()
-const userStore = useUserStore()
+const route = useRoute();
+const userStore = useUserStore();
 
 // 是否折叠侧边栏
-const isCollapse = ref(false)
+const isCollapse = ref(false);
 
 // 用户角色
-const userRole = computed(() => userStore.userInfo?.role || '')
+const userRole = computed(() => userStore.userInfo?.role || "");
 
 // 当前激活的菜单项
 const activeMenu = computed(() => {
-  return route.path
-})
+  return route.path;
+});
 
 // 监听路由变化，自动展开菜单
 onMounted(() => {
   // 如果是移动端，默认折叠
   if (window.innerWidth <= 768) {
-    isCollapse.value = true
+    isCollapse.value = true;
   }
-})
+});
 
 // 响应窗口大小变化
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   if (window.innerWidth <= 768) {
-    isCollapse.value = true
+    isCollapse.value = true;
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>

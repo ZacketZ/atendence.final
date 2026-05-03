@@ -123,7 +123,7 @@ import {
   createRecord,
   getStudentRecords,
 } from "@/api/attendance";
-import type { Activity, Record } from "@/api/attendance";
+import type { Activity } from "@/api/attendance";
 
 // 状态
 const loading = ref(true);

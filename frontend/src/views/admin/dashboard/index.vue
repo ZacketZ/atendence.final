@@ -29,13 +29,6 @@
       <h3>快速操作</h3>
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-card class="action-card" @click="goTo('/admin/schedule')">
-            <el-icon class="action-icon"><Calendar /></el-icon>
-            <h4>课表管理</h4>
-            <p>查看和管理课程安排</p>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
           <el-card class="action-card" @click="goTo('/admin/attendance')">
             <el-icon class="action-icon"><List /></el-icon>
             <h4>考勤管理</h4>
@@ -52,8 +45,15 @@
         <el-col :span="6">
           <el-card class="action-card" @click="goTo('/admin/users/staff')">
             <el-icon class="action-icon"><User /></el-icon>
-            <h4>用户管理</h4>
-            <p>管理系统用户账号</p>
+            <h4>教职工管理</h4>
+            <p>管理教职工账号</p>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card class="action-card" @click="goTo('/admin/users/student')">
+            <el-icon class="action-icon"><UserFilled /></el-icon>
+            <h4>学生管理</h4>
+            <p>管理学生账号</p>
           </el-card>
         </el-col>
       </el-row>
@@ -82,7 +82,7 @@
 import { computed, ref, onMounted } from "vue";
 import { useUserStore } from "@/store/user";
 import { useRouter } from "vue-router";
-import { Calendar, List, TrendCharts, User } from "@element-plus/icons-vue";
+import { List, TrendCharts, User, UserFilled } from "@element-plus/icons-vue";
 import request from "@/utils/request";
 
 const router = useRouter();
