@@ -12,28 +12,45 @@
       <div class="stats-grid">
         <div class="stat-card">
           <h3>总人数</h3>
-          <p class="stat-value">120</p>
+          <p class="stat-value">{{ dashboardData.todayStats.total }}</p>
         </div>
         <div class="stat-card">
           <h3>今日出勤</h3>
-          <p class="stat-value">98</p>
+          <p class="stat-value">{{ dashboardData.todayStats.checkedIn }}</p>
         </div>
         <div class="stat-card">
           <h3>今日缺勤</h3>
-          <p class="stat-value">22</p>
+          <p class="stat-value">{{ dashboardData.todayStats.pending }}</p>
         </div>
         <div class="stat-card">
           <h3>出勤率</h3>
-          <p class="stat-value">81.7%</p>
+          <p class="stat-value">{{ attendanceRate }}%</p>
         </div>
       </div>
       <div class="action-area">
         <h3>快捷操作</h3>
         <div class="buttons">
-          <button>考勤记录</button>
-          <button>人员管理</button>
-          <button>考勤员管理</button>
+          <button @click="router.push('/admin/attendance')">考勤记录</button>
+          <button @click="router.push('/admin/statistics')">统计报表</button>
+          <button @click="router.push('/admin/schedule')">课表管理</button>
           <button>数据导出</button>
+        </div>
+      </div>
+      <div
+        class="recent-section"
+        v-if="dashboardData.recentActivities.length > 0"
+      >
+        <h3>最近活动</h3>
+        <div class="activity-list">
+          <div
+            v-for="(item, index) in dashboardData.recentActivities"
+            :key="index"
+            class="activity-item"
+          >
+            <span class="time">{{ item.time }}</span>
+            <span class="user">{{ item.user }}</span>
+            <span class="action" :class="item.status">{{ item.action }}</span>
+          </div>
         </div>
       </div>
     </main>
@@ -41,16 +58,56 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/user'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/store/user";
+import { request } from "@/utils/request";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
+
+interface DashboardStats {
+  todayStats: {
+    total: number;
+    checkedIn: number;
+    pending: number;
+  };
+  recentActivities: Array<{
+    time: string;
+    user: string;
+    action: string;
+    status: string;
+  }>;
+}
+
+const dashboardData = ref<DashboardStats>({
+  todayStats: { total: 0, checkedIn: 0, pending: 0 },
+  recentActivities: [],
+});
+
+const attendanceRate = computed(() => {
+  const total = dashboardData.value.todayStats.total;
+  if (total === 0) return 0;
+  return Math.round((dashboardData.value.todayStats.checkedIn / total) * 100);
+});
+
+const fetchDashboardData = async () => {
+  try {
+    const data = await request.get<DashboardStats>("/dashboard/stats");
+    dashboardData.value = data;
+  } catch (error) {
+    console.error("获取仪表盘数据失败:", error);
+  }
+};
 
 const logout = () => {
-  userStore.clearUser()
-  router.push('/login')
-}
+  userStore.clearUser();
+  router.push("/login");
+};
+
+onMounted(() => {
+  fetchDashboardData();
+});
 </script>
 
 <style scoped>
@@ -138,6 +195,7 @@ const logout = () => {
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
 }
 
 .action-area h3 {
@@ -163,5 +221,61 @@ const logout = () => {
 
 .buttons button:hover {
   opacity: 0.9;
+}
+
+.recent-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recent-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.activity-item .time {
+  color: #666;
+  font-size: 13px;
+  min-width: 140px;
+}
+
+.activity-item .user {
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+  margin-left: 16px;
+}
+
+.activity-item .action {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.activity-item .action.success {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.activity-item .action.danger {
+  background: #fed7d7;
+  color: #c53030;
 }
 </style>

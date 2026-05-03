@@ -238,29 +238,33 @@ const formRules = {
 // 加载用户信息
 const loadUserProfile = async () => {
   try {
-    const userId = userStore.userInfo?.id
-    if (!userId) return
+    const userId = userStore.userInfo?.id;
+    if (!userId) return;
     const data = await getUserProfile(userId);
     userInfo.value = {
       id: data.id,
       username: data.username,
-      studentId: data.student_id || '',
-      name: data.name || '',
-      className: '',
-      major: '',
-      phone: '',
-      email: '',
-      avatar: data.avatar,
-      emergencyContact: '',
-      emergencyPhone: '',
-      dormitory: '',
+      studentId: data.student_id || "",
+      name: data.name || "",
+      className: data.class_name || "",
+      major: data.major || "",
+      phone: data.phone || "",
+      email: data.email || "",
+      avatar: data.avatar || "",
+      emergencyContact: data.emergency_contact || "",
+      emergencyPhone: data.emergency_phone || "",
+      dormitory: data.dormitory || "",
+      enrollmentDate: data.enrollment_date || "",
+      counselor: data.counselor || "",
+      college: data.college || "",
+      grade: data.grade || "",
     };
 
-    formData.phone = data.name || '';
-    formData.email = '';
-    formData.emergencyContact = '';
-    formData.emergencyPhone = '';
-    formData.dormitory = '';
+    formData.phone = data.phone || "";
+    formData.email = data.email || "";
+    formData.emergencyContact = data.emergency_contact || "";
+    formData.emergencyPhone = data.emergency_phone || "";
+    formData.dormitory = data.dormitory || "";
     formData.avatar = data.avatar || "";
   } catch (error) {
     ElMessage.error("加载个人信息失败：" + (error as Error).message);

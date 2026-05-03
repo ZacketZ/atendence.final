@@ -414,9 +414,7 @@ const handleSearch = async () => {
 const fetchDashboardData = async () => {
   try {
     dashboardData.value = await getDashboardData();
-    recentLateRecords.value = dashboardData.value.recentAbnormalRecords.filter(
-      (record) => record.status === "late",
-    );
+    recentLateRecords.value = dashboardData.value.recentAbnormalRecords;
   } catch (error) {
     console.error("获取看板数据失败:", error);
   }
@@ -556,35 +554,44 @@ const renderDurationChart = () => {
       title: {
         text: "迟到时长分布",
         left: "center",
+        top: 10,
+        textStyle: { fontSize: 14 },
       },
       tooltip: {
         trigger: "item",
-        formatter: "{a} <br/>{b}: {c}人 ({d}%)",
+        formatter: "{b}: {c}人 ({d}%)",
       },
       legend: {
-        orient: "vertical",
-        left: "left",
-        top: "center",
+        orient: "horizontal",
+        bottom: 10,
+        left: "center",
       },
       series: [
         {
           name: "迟到时长分布",
           type: "pie",
-          radius: "50%",
+          radius: ["30%", "55%"],
+          center: ["50%", "45%"],
+          avoidLabelOverlap: true,
+          label: {
+            show: true,
+            formatter: "{b}: {d}%",
+            fontSize: 12,
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 14,
+              fontWeight: "bold",
+            },
+          },
           data: lateDurationStats.value.map((item) => ({
             name: item.durationRange,
             value: item.count,
           })),
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
-            },
-          },
           itemStyle: {
             color: (params: any) => {
-              const colors = ["#e6a23c", "#f56c6c", "#409eff"];
+              const colors = ["#e6a23c", "#f56c6c", "#409eff", "#67c23a"];
               return colors[params.dataIndex % colors.length];
             },
           },
@@ -769,13 +776,23 @@ onUnmounted(() => {
 
 .late-report-section {
   .late-stats-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 30px;
     margin-top: 20px;
 
-    @media (max-width: 1200px) {
-      grid-template-columns: 1fr;
+    @media (min-width: 1200px) {
+      flex-direction: row;
+
+      .duration-distribution {
+        flex: 0 0 45%;
+        min-width: 0;
+      }
+
+      .late-details {
+        flex: 1;
+        min-width: 0;
+      }
     }
 
     .duration-distribution,

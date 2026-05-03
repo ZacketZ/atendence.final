@@ -69,7 +69,7 @@
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'success' ? 'success' : 'danger'">
-              {{ row.status === 'success' ? '成功' : '失败' }}
+              {{ row.status === "success" ? "成功" : "失败" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -79,63 +79,63 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useUserStore } from '@/store/user'
-import { useRouter } from 'vue-router'
-import {
-  Calendar,
-  List,
-  TrendCharts,
-  User
-} from '@element-plus/icons-vue'
+import { computed, ref, onMounted } from "vue";
+import { useUserStore } from "@/store/user";
+import { useRouter } from "vue-router";
+import { Calendar, List, TrendCharts, User } from "@element-plus/icons-vue";
+import request from "@/utils/request";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
 // 用户信息
-const userInfo = computed(() => userStore.userInfo)
+const userInfo = computed(() => userStore.userInfo);
 
 // 当前日期
-const currentDate = ref(new Date().toLocaleDateString('zh-CN', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long'
-}))
+const currentDate = ref(
+  new Date().toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  }),
+);
 
 // 今日统计数据
 const todayStats = ref({
-  total: 120,
-  checkedIn: 95,
-  pending: 25
-})
+  total: 0,
+  checkedIn: 0,
+  pending: 0,
+});
 
 // 最近活动
-const recentActivities = ref([
-  {
-    time: '2024-01-20 09:15',
-    user: '张三',
-    action: '完成签到',
-    status: 'success'
-  },
-  {
-    time: '2024-01-20 09:10',
-    user: '李四',
-    action: '提交请假申请',
-    status: 'success'
-  },
-  {
-    time: '2024-01-20 09:00',
-    user: '王五',
-    action: '签到失败',
-    status: 'danger'
+const recentActivities = ref<any[]>([]);
+
+// 加载仪表盘数据
+const loading = ref(false);
+const loadDashboardData = async () => {
+  loading.value = true;
+  try {
+    const res: any = await request.get("/dashboard/stats");
+    if (res) {
+      todayStats.value = res.todayStats;
+      recentActivities.value = res.recentActivities;
+    }
+  } catch (error) {
+    console.error("获取仪表盘数据失败:", error);
+  } finally {
+    loading.value = false;
   }
-])
+};
+
+onMounted(() => {
+  loadDashboardData();
+});
 
 // 跳转到指定页面
 const goTo = (path: string) => {
-  router.push(path)
-}
+  router.push(path);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -171,7 +171,7 @@ const goTo = (path: string) => {
           .stat-value {
             font-size: 28px;
             font-weight: bold;
-            color: #409EFF;
+            color: #409eff;
           }
 
           .stat-label {
@@ -202,7 +202,7 @@ const goTo = (path: string) => {
 
       .action-icon {
         font-size: 32px;
-        color: #409EFF;
+        color: #409eff;
         margin-bottom: 12px;
       }
 

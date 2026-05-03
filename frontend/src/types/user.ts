@@ -2,10 +2,10 @@
  * @description 用户相关类型定义
  * 整合前端状态、API 响应、认证等用户类型
  */
-import type { FrontendRole, BackendRole } from '@/constants'
-import { ROLE_MAP } from '@/constants'
+import type { FrontendRole, BackendRole } from "@/constants";
+import { ROLE_MAP } from "@/constants";
 
-export type { FrontendRole, BackendRole }
+export type { FrontendRole, BackendRole };
 
 // ==================== 核心用户类型 ====================
 
@@ -14,13 +14,13 @@ export type { FrontendRole, BackendRole }
  * 角色字段为前端映射后的 FrontendRole
  */
 export interface UserInfo {
-  id: number
-  username: string
-  role: FrontendRole
-  student_id?: string
-  name?: string
-  status?: number
-  avatar?: string
+  id: number;
+  username: string;
+  role: FrontendRole;
+  student_id?: string;
+  name?: string;
+  status?: number;
+  avatar?: string;
 }
 
 /**
@@ -30,8 +30,8 @@ export interface UserInfo {
  * userStore.setUser(result)
  */
 export interface LoginResult {
-  token: string
-  user: UserInfo
+  token: string;
+  user: UserInfo;
 }
 
 // ==================== API 请求/响应类型 ====================
@@ -40,30 +40,41 @@ export interface LoginResult {
  * @description 用户个人信息接口（API 响应，后端原始角色）
  */
 export interface UserProfile {
-  id: number
-  username: string
-  student_id: string
-  name: string
-  role: string
-  status: number
-  avatar?: string
+  id: number;
+  username: string;
+  student_id: string;
+  name: string;
+  role: string;
+  status: number;
+  avatar?: string;
+  phone?: string;
+  email?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  dormitory?: string;
+  enrollment_date?: string;
+  counselor?: string;
+  college?: string;
+  grade?: string;
+  class_name?: string;
+  major?: string;
 }
 
 /**
  * @description 修改密码请求参数
  */
 export interface ChangePasswordData {
-  oldPassword: string
-  newPassword: string
+  oldPassword: string;
+  newPassword: string;
 }
 
 /**
  * @description 注册请求参数
  */
 export interface RegisterData {
-  username: string
-  student_id: string
-  name: string
+  username: string;
+  student_id: string;
+  name: string;
 }
 
 // ==================== 角色映射工具 ====================
@@ -77,5 +88,5 @@ export interface RegisterData {
  * const frontendRole = mapRole('teacher') // 'staff'
  */
 export function mapRole(role: BackendRole): FrontendRole {
-  return ROLE_MAP[role] || 'student'
+  return ROLE_MAP[role] || "student";
 }

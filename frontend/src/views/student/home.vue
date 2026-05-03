@@ -11,47 +11,57 @@
       </div>
       <div class="checkin-card">
         <h3>今日签到</h3>
-        <p v-if="!hasCheckedIn" class="status-text">未签到</p>
-        <p v-else class="status-text success">已签到</p>
-        <button v-if="!hasCheckedIn" @click="handleCheckIn" :disabled="checkingIn">
-          {{ checkingIn ? '签到中...' : '立即签到' }}
-        </button>
-        <p v-if="checkInTime" class="checkin-time">签到时间：{{ checkInTime }}</p>
+        <p v-if="!todayRecord" class="status-text">未签到</p>
+        <p
+          v-else
+          class="status-text"
+          :class="todayRecord.final_status === 'normal' ? 'success' : 'warning'"
+        >
+          {{
+            todayRecord.final_status === "normal" ? "已签到" : "已签到（异常）"
+          }}
+        </p>
+        <button v-if="!todayRecord" @click="goCheckin">立即签到</button>
+        <p v-if="todayRecord" class="checkin-time">
+          签到时间：{{ formatTime(todayRecord.check_time) }}
+        </p>
       </div>
       <div class="stats-card">
         <h3>本月考勤统计</h3>
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">正常</span>
-            <span class="stat-value success">18</span>
+            <span class="stat-value success">{{ monthlyStats.normal }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">迟到</span>
-            <span class="stat-value warning">2</span>
+            <span class="stat-value warning">{{ monthlyStats.late }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">缺勤</span>
-            <span class="stat-value danger">0</span>
+            <span class="stat-value danger">{{ monthlyStats.absent }}</span>
           </div>
         </div>
       </div>
       <div class="history-card">
         <h3>近期记录</h3>
         <div class="history-list">
-          <div class="history-item">
-            <span class="date">2026-04-08</span>
-            <span class="time">08:15</span>
-            <span class="status success">正常</span>
+          <div v-if="recentRecords.length === 0" class="empty-tip">
+            暂无打卡记录
           </div>
-          <div class="history-item">
-            <span class="date">2026-04-07</span>
-            <span class="time">08:35</span>
-            <span class="status warning">迟到</span>
-          </div>
-          <div class="history-item">
-            <span class="date">2026-04-06</span>
-            <span class="time">08:10</span>
-            <span class="status success">正常</span>
+          <div
+            v-for="(item, index) in recentRecords"
+            :key="index"
+            class="history-item"
+          >
+            <span class="date">{{ formatDate(item.check_time) }}</span>
+            <span class="time">{{ formatTime(item.check_time) }}</span>
+            <span
+              class="status"
+              :class="item.final_status === 'normal' ? 'success' : 'warning'"
+            >
+              {{ item.final_status === "normal" ? "正常" : "迟到" }}
+            </span>
           </div>
         </div>
       </div>
@@ -60,30 +70,86 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/user'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/store/user";
+import { request } from "@/utils/request";
 
-const router = useRouter()
-const userStore = useUserStore()
-const hasCheckedIn = ref(false)
-const checkingIn = ref(false)
-const checkInTime = ref('')
+const router = useRouter();
+const userStore = useUserStore();
 
-const handleCheckIn = () => {
-  checkingIn.value = true
-  setTimeout(() => {
-    hasCheckedIn.value = true
-    checkInTime.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    checkingIn.value = false
-    alert('签到成功！')
-  }, 1000)
+interface RecordItem {
+  id: number;
+  activity_id: number;
+  user_id: number;
+  check_time: string;
+  gps_longitude: number;
+  gps_latitude: number;
+  liveness_result: string;
+  final_status: string;
+  device_info: string | null;
+  created_at: string;
+  title: string;
 }
+
+const records = ref<RecordItem[]>([]);
+
+const todayRecord = computed(() => {
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  return records.value.find((r) => r.check_time.startsWith(todayStr)) || null;
+});
+
+const recentRecords = computed(() => {
+  return records.value.slice(0, 10);
+});
+
+const monthlyStats = computed(() => {
+  const now = new Date();
+  const monthStr = now.toISOString().slice(0, 7);
+  const monthRecords = records.value.filter((r) =>
+    r.check_time.startsWith(monthStr),
+  );
+  return {
+    normal: monthRecords.filter((r) => r.final_status === "normal").length,
+    late: monthRecords.filter((r) => r.final_status === "abnormal").length,
+    absent: 0,
+  };
+});
+
+const formatDate = (dt: string) => {
+  if (!dt) return "";
+  return dt.split("T")[0];
+};
+
+const formatTime = (dt: string) => {
+  if (!dt) return "";
+  const parts = dt.split("T")[1]?.split(".")[0]?.split(":");
+  if (!parts) return "";
+  return `${parts[0]}:${parts[1]}`;
+};
+
+const fetchRecords = async () => {
+  try {
+    const data = await request.get<RecordItem[]>("/records/student");
+    records.value = data;
+  } catch (error) {
+    console.error("获取打卡记录失败:", error);
+  }
+};
+
+const goCheckin = () => {
+  router.push("/student/checkin");
+};
 
 const logout = () => {
-  userStore.clearUser()
-  router.push('/login')
-}
+  userStore.clearUser();
+  router.push("/login");
+};
+
+onMounted(() => {
+  fetchRecords();
+});
 </script>
 
 <style scoped>
@@ -163,6 +229,10 @@ const logout = () => {
   color: #c6f6d5;
 }
 
+.checkin-card .status-text.warning {
+  color: #feebc8;
+}
+
 .checkin-card button {
   padding: 16px 48px;
   background: white;
@@ -175,13 +245,8 @@ const logout = () => {
   transition: transform 0.2s;
 }
 
-.checkin-card button:hover:not(:disabled) {
+.checkin-card button:hover {
   transform: scale(1.05);
-}
-
-.checkin-card button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .checkin-time {
@@ -256,6 +321,12 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  padding: 20px;
 }
 
 .history-item {

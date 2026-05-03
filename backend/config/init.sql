@@ -27,6 +27,41 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
+-- 用户扩展信息表（手机、邮箱、紧急联系人等）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id                INT AUTO_INCREMENT PRIMARY KEY,
+  user_id           INT          NOT NULL UNIQUE,
+  phone             VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
+  email             VARCHAR(100) DEFAULT NULL COMMENT '邮箱',
+  emergency_contact VARCHAR(50)  DEFAULT NULL COMMENT '紧急联系人',
+  emergency_phone   VARCHAR(20)  DEFAULT NULL COMMENT '紧急联系人电话',
+  dormitory         VARCHAR(200) DEFAULT NULL COMMENT '宿舍地址',
+  avatar            VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
+  enrollment_date   DATE         DEFAULT NULL COMMENT '入学时间',
+  counselor         VARCHAR(50)  DEFAULT NULL COMMENT '辅导员',
+  college           VARCHAR(100) DEFAULT NULL COMMENT '学院',
+  grade             VARCHAR(20)  DEFAULT NULL COMMENT '年级',
+  created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 用户通知偏好表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_notification_preferences (
+  id                     INT AUTO_INCREMENT PRIMARY KEY,
+  user_id                INT  NOT NULL UNIQUE,
+  checkin_reminder       BOOLEAN NOT NULL DEFAULT TRUE COMMENT '签到提醒',
+  approval_notification  BOOLEAN NOT NULL DEFAULT TRUE COMMENT '审批结果通知',
+  attendance_alert       BOOLEAN NOT NULL DEFAULT TRUE COMMENT '考勤异常提醒',
+  created_at             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
 -- 考勤活动表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS attendance_activities (
