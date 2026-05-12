@@ -44,6 +44,18 @@ const routes = [
         component: () => import("@/views/admin/statistics/index.vue"),
         meta: { title: "统计报表" },
       },
+      {
+        path: "users/staff",
+        name: "AdminUsersStaff",
+        component: () => import("@/views/admin/users/staff/index.vue"),
+        meta: { title: "教职工管理" },
+      },
+      {
+        path: "users/student",
+        name: "AdminUsersStudent",
+        component: () => import("@/views/admin/users/student/index.vue"),
+        meta: { title: "学生管理" },
+      },
     ],
   },
   {
