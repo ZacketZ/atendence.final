@@ -31,8 +31,15 @@ app.use("/api/statistics", statisticsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 
-app.get("/", (req, res) => {
-  res.json({ message: "Attendance System API is running" });
+// 托管前端静态文件（生产环境）
+const frontendDist = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendDist));
+
+// 所有非 API 路由返回前端页面（支持 SPA 路由）
+app.get("*", (req, res) => {
+  if (!req.path.startsWith("/api")) {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  }
 });
 
 async function startServer() {

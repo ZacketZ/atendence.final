@@ -3,12 +3,11 @@
     <!-- 左侧：Logo 和面包屑 -->
     <div class="left-section">
       <div class="logo">
-
         <span class="logo-text">考勤系统</span>
       </div>
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/dashboard' }">
-          {{ $route.meta.title || '首页' }}
+          {{ $route.meta.title || "首页" }}
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -33,18 +32,12 @@
       <el-dropdown @command="handleCommand">
         <div class="user-info">
           <el-avatar :size="32" :src="userInfo?.avatar || defaultAvatar" />
-          <span class="username">{{ userInfo?.username || '用户' }}</span>
+          <span class="username">{{ userInfo?.username || "用户" }}</span>
           <el-icon><ArrowDown /></el-icon>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="profile">
-              <User /> 个人信息
-            </el-dropdown-item>
-            <el-dropdown-item command="settings">
-              <Setting /> 设置
-            </el-dropdown-item>
-            <el-dropdown-item divided command="logout">
+            <el-dropdown-item command="logout">
               <SwitchButton /> 退出登录
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -55,49 +48,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/user'
-import { ElMessageBox } from 'element-plus'
-import { Bell, Setting, ArrowDown, User, SwitchButton } from '@element-plus/icons-vue'
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/store/user";
+import { ElMessageBox } from "element-plus";
+import {
+  Bell,
+  Setting,
+  ArrowDown,
+  SwitchButton,
+} from "@element-plus/icons-vue";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
 // 默认头像
-const defaultAvatar = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a563f534fjpeg.jpeg'
+const defaultAvatar =
+  "https://cube.elemecdn.com/0/88/03b0d39583f48206768a563f534fjpeg.jpeg";
 
 // 用户信息
-const userInfo = computed(() => userStore.userInfo)
+const userInfo = computed(() => userStore.userInfo);
 
 // 处理下拉菜单命令
 const handleCommand = async (command: string) => {
   switch (command) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'settings':
-      router.push('/settings')
-      break
-    case 'logout':
+    case "logout":
       try {
-        await ElMessageBox.confirm(
-          '确定要退出登录吗？',
-          '提示',
-          {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-        )
-        userStore.clearUser()
-        router.push('/login')
+        await ElMessageBox.confirm("确定要退出登录吗？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+        userStore.clearUser();
+        router.push("/login");
       } catch {
         // 用户取消退出
       }
-      break
+      break;
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
