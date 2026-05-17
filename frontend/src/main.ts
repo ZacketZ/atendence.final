@@ -1,34 +1,38 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App.vue'
-import router from './router'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import router from "./router";
 
-import './style.css'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import { vPermission, vRole } from './directives/permission'
-import { setupGlobalErrorHandler, handleError } from './utils/errors'
+import "./style.css";
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import { vPermission, vRole } from "./directives/permission";
+import { setupGlobalErrorHandler, handleError } from "./utils/errors";
+import { clearAuth } from "./utils/auth";
 
-const app = createApp(App)
-const pinia = createPinia()
+// 启动时清除可能存在的过期/无效 token，避免 "Invalid or expired token" 错误
+clearAuth();
 
-app.use(pinia)
-app.use(router)
-app.use(ElementPlus)
+const app = createApp(App);
+const pinia = createPinia();
+
+app.use(pinia);
+app.use(router);
+app.use(ElementPlus);
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
+  app.component(key, component);
 }
 
-app.directive('permission', vPermission)
-app.directive('role', vRole)
+app.directive("permission", vPermission);
+app.directive("role", vRole);
 
 app.config.errorHandler = (err, _instance, info) => {
-  handleError(err)
-  console.error('[Vue Error]', info, err)
-}
+  handleError(err);
+  console.error("[Vue Error]", info, err);
+};
 
-setupGlobalErrorHandler()
+setupGlobalErrorHandler();
 
-app.mount('#app')
+app.mount("#app");

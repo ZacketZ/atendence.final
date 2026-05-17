@@ -1,10 +1,16 @@
+const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const path = require("path");
+const fs = require("fs");
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const { pool: db, testConnection, closePool } = require("./config/db");
+const DB_HOST = process.env.DB_HOST || "localhost";
+const DB_PORT = parseInt(process.env.DB_PORT, 10) || 3306;
+const DB_USER = process.env.DB_USER || "root";
+const DB_PASSWORD = process.env.DB_PASSWORD || "";
+const DB_NAME = process.env.DB_NAME || "attendance_system";
 
 const admins = [
   { username: "admin", name: "系统管理员" },
@@ -28,76 +34,69 @@ const students = [
   { username: "student5", student_id: "20230005", name: "陈七", college: "外语学院", grade: "2023级", major: "英语", class_name: "英语2301", phone: "13800001005", email: "chenqi@example.com", dormitory: "西苑3号楼201室" },
 ];
 
-async function initAll() {
-  const connected = await testConnection();
-  if (!connected) {
-    console.error("[Init] 数据库不可用，初始化终止");
-    process.exit(1);
-  }
-
+async function setup() {
+  let conn;
   try {
+    conn = await mysql.createConnection({
+      host: DB_HOST,
+      port: DB_PORT,
+      user: DB_USER,
+      password: DB_PASSWORD,
+      multipleStatements: true,
+    });
+
+    console.log("[Setup] 已连接 MySQL");
+
+    const initSQL = fs.readFileSync(
+      path.resolve(__dirname, "config", "init.sql"),
+      "utf-8"
+    );
+
+    await conn.query(initSQL);
+    console.log("[Setup] 数据库和表创建成功");
+
+    await conn.changeUser({ database: DB_NAME });
+
     const hashedPassword = await bcrypt.hash("123456", 10);
 
-    // ==================== 创建管理员 ====================
     console.log("\n========== 创建管理员账号 ==========");
     for (const admin of admins) {
-      const [existing] = await db.query(
-        "SELECT id FROM users WHERE username = ?",
-        [admin.username]
-      );
+      const [existing] = await conn.query("SELECT id FROM users WHERE username = ?", [admin.username]);
       if (existing.length === 0) {
-        await db.query(
-          "INSERT INTO users (username, password_hash, role, name) VALUES (?, ?, ?, ?)",
-          [admin.username, hashedPassword, "admin", admin.name]
-        );
+        await conn.query("INSERT INTO users (username, password_hash, role, name) VALUES (?, ?, ?, ?)", [admin.username, hashedPassword, "admin", admin.name]);
         console.log(`  ✓ 管理员: ${admin.username} / 123456 (${admin.name})`);
       } else {
         console.log(`  - 管理员 ${admin.username} 已存在，跳过`);
       }
     }
 
-    // ==================== 创建教师 ====================
     console.log("\n========== 创建教师账号 ==========");
     for (const teacher of teachers) {
-      const [existing] = await db.query(
-        "SELECT id FROM users WHERE username = ?",
-        [teacher.username]
-      );
+      const [existing] = await conn.query("SELECT id FROM users WHERE username = ?", [teacher.username]);
       if (existing.length === 0) {
-        await db.query(
-          "INSERT INTO users (username, password_hash, role, name) VALUES (?, ?, ?, ?)",
-          [teacher.username, hashedPassword, "teacher", teacher.name]
-        );
+        await conn.query("INSERT INTO users (username, password_hash, role, name) VALUES (?, ?, ?, ?)", [teacher.username, hashedPassword, "teacher", teacher.name]);
         console.log(`  ✓ 教师: ${teacher.username} / 123456 (${teacher.name})`);
       } else {
         console.log(`  - 教师 ${teacher.username} 已存在，跳过`);
       }
     }
 
-    // ==================== 创建学生 ====================
     console.log("\n========== 创建学生账号 ==========");
     for (const student of students) {
-      const [existing] = await db.query(
-        "SELECT id FROM users WHERE username = ?",
-        [student.username]
-      );
+      const [existing] = await conn.query("SELECT id FROM users WHERE username = ?", [student.username]);
       if (existing.length === 0) {
-        const [result] = await db.query(
+        const [result] = await conn.query(
           "INSERT INTO users (username, password_hash, role, student_id, name, status) VALUES (?, ?, ?, ?, ?, ?)",
           [student.username, hashedPassword, "student", student.student_id, student.name, 1]
         );
         const userId = result.insertId;
 
-        await db.query(
-          `INSERT INTO user_profiles (user_id, phone, email, college, grade, major, class_name, dormitory, enrollment_date)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        await conn.query(
+          "INSERT INTO user_profiles (user_id, phone, email, college, grade, major, class_name, dormitory, enrollment_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
           [userId, student.phone, student.email, student.college, student.grade, student.major, student.class_name, student.dormitory, "2023-09-01"]
         );
 
-        await db.query(
-          "INSERT INTO user_notification_preferences (user_id) VALUES (?)",
-          [userId]
-        );
+        await conn.query("INSERT INTO user_notification_preferences (user_id) VALUES (?)", [userId]);
 
         console.log(`  ✓ 学生: ${student.username} / 123456 (${student.name}, 学号: ${student.student_id})`);
       } else {
@@ -105,17 +104,18 @@ async function initAll() {
       }
     }
 
-    console.log("\n========== 初始化完成 ==========");
+    console.log("\n========== 全部完成 ==========");
     console.log("  管理员: admin, admin2, admin3");
     console.log("  教师:   teacher1 ~ teacher5");
     console.log("  学生:   student1 ~ student5");
     console.log("  默认密码: 123456\n");
   } catch (error) {
-    console.error("[Init] 初始化失败:", error.message);
+    console.error("[Setup] 失败:", error.message);
+    process.exit(1);
   } finally {
-    await closePool();
+    if (conn) await conn.end();
     process.exit(0);
   }
 }
 
-initAll();
+setup();
